@@ -219,8 +219,7 @@ class NotesBook(UserDict): # клас для книги нотаток, що н�
 
 def input_error_contact(func):
     def inner(*args, **kwargs):
-        try:1
-        
+        try:
             return func(*args, **kwargs)
         except ValueError:
             return "⚠️  Будь ласка, введіть ім'я та номер телефону."
