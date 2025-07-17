@@ -256,13 +256,35 @@ def show_phone(name, book: AddressBook):
         return ", ".join([phone.value for phone in book.find(name).phones])
     else:
         return "Ой-йой, контакт не знайдено 😢"
+# @input_error_contact
+# def show_all(book: AddressBook):
+#     result = ""
+#     for record in book.data.values():  # тут отримуємо всі записи
+#         phones = ", ".join(phone.value for phone in record.phones)
+#         result += f"{record.name.value}: {phones}\n"
+#     return result.strip() 
 @input_error_contact
 def show_all(book: AddressBook):
+    if not book.data:
+        return "Книга контактів порожня"
+
     result = ""
-    for record in book.data.values():  # тут отримуємо всі записи
-        phones = ", ".join(phone.value for phone in record.phones)
-        result += f"{record.name.value}: {phones}\n"
-    return result.strip() 
+    for record in book.data.values():
+        name = record.name.value
+        phones = ", ".join(phone.value for phone in record.phones) if record.phones else "не вказано"
+        birthday = record.birthday.value.strftime("%d.%m.%Y") if record.birthday else "не вказано"
+        email = record.email.value if record.email else "не вказано"
+        address = record.address.value if record.address else "не вказано"
+        result += (
+            f"👤 Name: {name}\n"
+            f"📞 Phones: {phones}\n"
+            f"🎉 Birthday: {birthday}\n"
+            f"📧 Email: {email}\n"
+            f"🏠 Address: {address}\n"
+            "--------------------------------\n"
+        )
+
+    return result.strip()
 
 @input_error_contact
 def add_birthday(args, book: AddressBook):
@@ -336,7 +358,7 @@ def help_contacts():
 • add [ім'я] [телефон]        – додати контакт
 • change [ім'я] [телефон]     – змінити номер телефону контакту
 • phone [ім'я]                – показати номер телефону контакту
-• all                         – показати всі контакти
+• all                         – показати всі дані контактів
 • add-birthday [ім'я] [дата]  – додати день народження
 • show-birthday [ім'я]        – показати день народження контакта
 • birthdays [кількість днів]  – показати дні народження, що наближаються
