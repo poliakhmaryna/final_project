@@ -1,15 +1,10 @@
-# Hello App
+# Адресна книга Snaky Sisters
 
-A simple Python console app that prints a colorful hello message.
+Це консольний застосунок на Python, який дозволяє зберігати та керувати контактами: іменами, телефонами, email, адресами та днями народження.  
 
 ## Install
 
-```bash
-pip install .
-```
 
 ## Run
 
-```bash
-hello
-```
+
