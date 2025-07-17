@@ -30,20 +30,20 @@ class Field:
 class Name(Field):
     def __init__(self, value):
         if not value:
-            raise ValueError("Name cannot be empty")
+            raise ValueError("⚠️ Ім’я є обов’язковим для створення контакту. Спробуй ще раз.")
         super().__init__(value)
 
 class Phone(Field):
     def __init__(self, value):
         if not (len(value) == 10):
-            raise ValueError("Phone number must be 10 digits") 
+            raise ValueError("Номер телефону має містити рівно 10 цифр. Спробуй ще раз.") 
         super().__init__(value)
 class Birthday(Field):
     def __init__(self, value):
         try:
             birthday = datetime.strptime(value, "%d.%m.%Y")
         except ValueError:
-            raise ValueError("Invalid date format. Use DD.MM.YYYY")
+            raise ValueError("Невірний формат дати. Введи у форматі: DD.MM.YYYY")
         self.value = birthday
 
 
@@ -52,14 +52,14 @@ class Birthday(Field):
 class Email(Field):
     def __init__(self, value):
         if not re.match(r"^[\w\.-]+@[\w\.-]+\.\w+$", value):
-            raise ValueError("Invalid email format")
+            raise ValueError("Емм... Це не схоже на email. Спробуй у форматі: username@example.com")
         super().__init__(value)
 
 
 class Address(Field):
     def __init__(self, value):
         if not value:
-            raise ValueError("Address cannot be empty")
+            raise ValueError("🐍 Ой, не забувай вказати адресу!")
         super().__init__(value)
 
 
@@ -76,7 +76,7 @@ class Record:
         self.birthday = None       # день народження — за бажанням
 
     def __str__(self):
-        return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}"
+        return f"👤 Contact name: {self.name.value}, 📞 phones: {'; '.join(p.value for p in self.phones)}"
     
 
     def add_phone(self, phone):
@@ -204,11 +204,11 @@ def input_error_contact(func):
         try:
             return func(*args, **kwargs)
         except ValueError:
-            return "Будь ласка, введіть ім'я та номер телефону."
+            return "⚠️ Будь ласка, введіть ім'я та номер телефону."
         except KeyError:
-            return "Вкажіть ім'я користувача."
+            return "⚠️ Контакт не знайдено. Перевір, чи правильно вказано ім’я. Можеш скористатися командою 'all', щоб побачити список контактів."
         except IndexError:
-            return "Вкажіть ім'я користувача."
+            return "⚠️ Здається, ти забув(ла) вказати ім’я."
     return inner
 def parse_input(user_input):
     cmd, args = user_input.split()
@@ -279,7 +279,7 @@ def show_birthday(args, book: AddressBook):
     name = args[0]
     record = book.find(name)
     if record and record.birthday:
-        return f"{name}'s birthday is on {record.birthday.value.strftime('%d.%m.%Y')}"
+        return f"У контакта {name} дата дня народження {record.birthday.value.strftime('%d.%m.%Y')}"
     elif record:
         return f"У контакта {name} дата дня народження не збережена."
     else:
@@ -289,7 +289,7 @@ def show_birthday(args, book: AddressBook):
 def birthdays(args, book):
     upcoming = book.get_upcoming_birthdays()
     if not upcoming:
-        return "No upcoming birthdays this week."
+        return "🎉 Цього тижня ніхто не святкує день народження."
 
     lines = []
     for day, names in upcoming.items():
@@ -319,7 +319,7 @@ def add_email(args, book: AddressBook):
 @input_error_contact
 def add_address(args, book: AddressBook):
     if len(args) < 2:
-        raise ValueError("Введіть: add-address [ім'я] [адреса]")
+        raise ValueError("Щоб додати адресу, введіть команду у форматі: add-address [ім'я] [адреса]")
     name = args[0]
     address = " ".join(args[1:])
     record = book.find(name)
@@ -486,6 +486,7 @@ def main_menu():
             break
         else:
             print("⛔ Невірний вибір. Спробуй ще раз.")
+
 print("👋 Вітаємо тебе у світі Snaky sisters 🐍! Тут код не просто працює — він танцює!")
 
 
@@ -494,7 +495,7 @@ def main_contacts():
     print("📖 Книга контактів – готова до роботи!")
     print("💡 Для перегляду всього переліку команд введіть: help_contacts")
     while True:
-        user_input = input("Enter a command: ")
+        user_input = input("--> ")
         command, args = parse_input(user_input)
 
         if command in ["close", "exit"]:
