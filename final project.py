@@ -112,38 +112,8 @@ class AddressBook(UserDict):
     def delete (self, name):
         if name in self.data:
             del self.data[name]
-    
-    # def get_upcoming_birthdays(self):
-    #     today = datetime.today().date()
-    #     upcoming_birthdays_this_week = []
-        
-    #     for user in self.data.values():
-    #         name = user.name.value
-    #         birthday = datetime.strptime(user.name.value, "%d.%m.%Y").date()
-    #         birthday_this_year = birthday.replace(year=today.year)
-
-    #         if birthday_this_year < today:
-    #             birthday_this_year = birthday_this_year.replace(year=today.year + 1)
-
-    #         delta_days = (birthday_this_year - today).days
-
-    #         if 0 <= delta_days <= 7:
-    #             congratulation_date = birthday_this_year
-
-    #             if congratulation_date.weekday() == 5:
-    #                 congratulation_date += timedelta(days=2)
-    #             elif congratulation_date.weekday() == 6:
-    #                 congratulation_date += timedelta(days=1)
-
-    #             upcoming_birthdays_this_week.append({
-    #                 "name": name,
-    #                 "congratulation_date": congratulation_date.strftime("%d.%m.%Y")
-    #             })
-
-    #     return upcoming_birthdays_this_week
 
 #  класс Notes
-
 
 class NotesName(Field): # клас для назви нотатки
     def __init__(self, value):
@@ -229,8 +199,6 @@ class NotesBook(UserDict): # клас для книги нотаток, що н�
             pass  # Файл уперше не знайдено — працюємо з порожньою книгою
 
 
-
-
 def input_error_contact(func):
     def inner(*args, **kwargs):
         try:
@@ -248,10 +216,8 @@ def parse_input(user_input):
     return cmd, *args
 
 
-
 #вимога про контакти: add_contact - додеє контакт в книгу контактів , сhange_contact - редагує, delete  - видаляє.
 #  це обовязкові функції згідно завдання. усі інші були в дз я залишила, та окремо додала функцію 
-
 
 
 @input_error_contact
