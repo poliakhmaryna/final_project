@@ -1,9 +1,9 @@
-from collections import UserDict
-from datetime import datetime, timedelta
-import pickle
-import re
-import textwrap # для форматування тексту нотаток, переносу текста 
-import json # для збереження нотаток у файл
+from collections import UserDict # для створення класу AddressBook, що наслідує UserDict
+from datetime import datetime, timedelta # для роботи з датами та часом
+import pickle # для серіалізації та десеріалізації даних
+import re # для перевірки формату email
+import textwrap # для форматування тексту нотаток, переносу текста, щоб була краса в терміналі)
+import json # для збереження та завантаження нотаток у форматі JSON
 
 
 #Серелізація
@@ -18,9 +18,6 @@ def load_data(filename="addressbook.pkl"):
     except FileNotFoundError:
         return AddressBook()
 
-
-
-
 #опис класів
 
 class Field:
@@ -33,20 +30,20 @@ class Field:
 class Name(Field):
     def __init__(self, value):
         if not value:
-            raise ValueError("Name cannot be empty")
+            raise ValueError("⚠️ Ім’я є обов’язковим для створення контакту. Спробуй ще раз.")
         super().__init__(value)
 
 class Phone(Field):
     def __init__(self, value):
         if not (len(value) == 10):
-            raise ValueError("Phone number must be 10 digits") 
+            raise ValueError("Номер телефону має містити рівно 10 цифр. Спробуй ще раз.") 
         super().__init__(value)
 class Birthday(Field):
     def __init__(self, value):
         try:
             birthday = datetime.strptime(value, "%d.%m.%Y")
         except ValueError:
-            raise ValueError("Invalid date format. Use DD.MM.YYYY")
+            raise ValueError("Невірний формат дати. Введи у форматі: DD.MM.YYYY")
         self.value = birthday
 
 
@@ -55,14 +52,14 @@ class Birthday(Field):
 class Email(Field):
     def __init__(self, value):
         if not re.match(r"^[\w\.-]+@[\w\.-]+\.\w+$", value):
-            raise ValueError("Invalid email format")
+            raise ValueError("Емм... Це не схоже на email. Спробуй у форматі: username@example.com")
         super().__init__(value)
 
 
 class Address(Field):
     def __init__(self, value):
         if not value:
-            raise ValueError("Address cannot be empty")
+            raise ValueError("🐍 Ой, не забувай вказати адресу!")
         super().__init__(value)
 
 
@@ -78,12 +75,8 @@ class Record:
         self.address = None        # адреса — теж пізніше
         self.birthday = None       # день народження — за бажанням
 
-
-
-
-
     def __str__(self):
-        return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}"
+        return f"👤 Contact name: {self.name.value}, 📞 phones: {'; '.join(p.value for p in self.phones)}"
     
 
     def add_phone(self, phone):
@@ -114,51 +107,31 @@ class AddressBook(UserDict):
     def add_record(self, record):
         self.data[record.name.value] = record
     def find(self, name):
-        return self.data.get(name)
-    
-    
-    
-    
+        return self.data.get(name)  
     
     def delete (self, name):
         if name in self.data:
             del self.data[name]
-    
-    # def get_upcoming_birthdays(self):
-    #     today = datetime.today().date()
-    #     upcoming_birthdays_this_week = []
-        
-    #     for user in self.data.values():
-    #         name = user.name.value
-    #         birthday = datetime.strptime(user.name.value, "%d.%m.%Y").date()
-    #         birthday_this_year = birthday.replace(year=today.year)
 
-    #         if birthday_this_year < today:
-    #             birthday_this_year = birthday_this_year.replace(year=today.year + 1)
+    def get_upcoming_birthdays(self, days: int = 7): # Метод для отримання днів народження, що наближаються
+        today = datetime.today().date()
+        upcoming = []
 
-    #         delta_days = (birthday_this_year - today).days
+        for record in self.data.values():
+            if record.birthday:
+                bday = record.birthday.value
+                bday_this_year = bday.replace(year=today.year).date()
 
-    #         if 0 <= delta_days <= 7:
-    #             congratulation_date = birthday_this_year
+                if bday_this_year < today:
+                    bday_this_year = bday_this_year.replace(year=today.year + 1)
 
-    #             if congratulation_date.weekday() == 5:
-    #                 congratulation_date += timedelta(days=2)
-    #             elif congratulation_date.weekday() == 6:
-    #                 congratulation_date += timedelta(days=1)
+                delta = (bday_this_year - today).days
+                if 0 <= delta <= days:
+                    upcoming.append(record)
 
-    #             upcoming_birthdays_this_week.append({
-    #                 "name": name,
-    #                 "congratulation_date": congratulation_date.strftime("%d.%m.%Y")
-    #             })
-
-    #     return upcoming_birthdays_this_week
-
-
-
-
+        return upcoming
 
 #  класс Notes
-
 
 class NotesName(Field): # клас для назви нотатки
     def __init__(self, value):
@@ -244,18 +217,16 @@ class NotesBook(UserDict): # клас для книги нотаток, що н�
             pass  # Файл уперше не знайдено — працюємо з порожньою книгою
 
 
-
-
 def input_error_contact(func):
     def inner(*args, **kwargs):
         try:
             return func(*args, **kwargs)
         except ValueError:
-            return "Будь ласка, введіть ім'я та номер телефону."
+            return "⚠️  Будь ласка, введіть ім'я та номер телефону."
         except KeyError:
-            return "Вкажіть ім'я користувача."
+            return "⚠️  Контакт не знайдено. Перевір, чи правильно вказано ім’я. Можеш скористатися командою 'all', щоб побачити список контактів."
         except IndexError:
-            return "Вкажіть ім'я користувача."
+            return "⚠️  Здається, ти забув(ла) вказати ім’я."
     return inner
 def parse_input(user_input):
     cmd, args = user_input.split()
@@ -263,11 +234,8 @@ def parse_input(user_input):
     return cmd, *args
 
 
-
 #вимога про контакти: add_contact - додеє контакт в книгу контактів , сhange_contact - редагує, delete  - видаляє.
 #  це обовязкові функції згідно завдання. усі інші були в дз я залишила, та окремо додала функцію 
-# додати имейл та адресу - це у випадку, якщо при створенні контакту ми відразу не вказали ці данні і 
-# хочемо пізніше їх додати
 
 
 @input_error_contact
@@ -306,13 +274,29 @@ def show_phone(name, book: AddressBook):
         return ", ".join([phone.value for phone in book.find(name).phones])
     else:
         return "Ой-йой, контакт не знайдено 😢"
+
 @input_error_contact
 def show_all(book: AddressBook):
+    if not book.data:
+        return "Книга контактів порожня"
+
     result = ""
-    for record in book.data.values():  # тут отримуємо всі записи
-        phones = ", ".join(phone.value for phone in record.phones)
-        result += f"{record.name.value}: {phones}\n"
-    return result.strip() 
+    for record in book.data.values():
+        name = record.name.value
+        phones = ", ".join(phone.value for phone in record.phones) if record.phones else "не вказано"
+        birthday = record.birthday.value.strftime("%d.%m.%Y") if record.birthday else "не вказано"
+        email = record.email.value if record.email else "не вказано"
+        address = record.address.value if record.address else "не вказано"
+        result += (
+            f"👤 Name: {name}\n"
+            f"📞 Phones: {phones}\n"
+            f"🎉 Birthday: {birthday}\n"
+            f"📧 Email: {email}\n"
+            f"🏠 Address: {address}\n"
+            "--------------------------------\n"
+        )
+
+    return result.strip()
 
 @input_error_contact
 def add_birthday(args, book: AddressBook):
@@ -329,24 +313,29 @@ def show_birthday(args, book: AddressBook):
     name = args[0]
     record = book.find(name)
     if record and record.birthday:
-        return f"{name}'s birthday is on {record.birthday.value.strftime('%d.%m.%Y')}"
+        return f"У контакта {name} дата дня народження {record.birthday.value.strftime('%d.%m.%Y')}"
     elif record:
         return f"У контакта {name} дата дня народження не збережена."
     else:
         return f"Ой-йой, контакт '{name}'не знайдено 😢"
 
 @input_error_contact
-def birthdays(args, book):
-    upcoming = book.get_upcoming_birthdays()
+def birthdays(args, book: AddressBook):
+    try:
+        days = int(args[0]) if args else 7
+    except ValueError:
+        return "⚠️ Введи кількість днів як ціле число. Наприклад: birthdays 5"
+
+    upcoming = book.get_upcoming_birthdays(days)
     if not upcoming:
-        return "No upcoming birthdays this week."
+        return f"🎉 Ніхто не святкує день народження протягом наступних {days} днів."
 
-    lines = []
-    for day, names in upcoming.items():
-        line = f"{day}: {', '.join(names)}"
-        lines.append(line)
+    result = f"🎂 Дні народження через {days} днів:\n"
+    for record in upcoming:
+        date = record.birthday.value.strftime("%d.%m.%Y")
+        result += f"👤 {record.name.value} — {date}\n"
+    return result.strip()
 
-    return "\n".join(lines)
 
 @input_error_contact
 def delete(args, book: AddressBook):
@@ -369,7 +358,7 @@ def add_email(args, book: AddressBook):
 @input_error_contact
 def add_address(args, book: AddressBook):
     if len(args) < 2:
-        raise ValueError("Введіть: add-address [ім'я] [адреса]")
+        raise ValueError("Щоб додати адресу, введіть команду у форматі: add-address [ім'я] [адреса]")
     name = args[0]
     address = " ".join(args[1:])
     record = book.find(name)
@@ -382,25 +371,19 @@ def add_address(args, book: AddressBook):
 def help_contacts():
     return """
 Доступні команди:
-
-• hello                – привітання
-• add [ім'я] [телефон] – додати контакт
-• change [ім'я] [телефон] – змінити номер телефону контакту
-• phone [ім'я]          – показати номер телефону контакту
-• all                   – показати всі контакти
-• add-birthday [ім'я] [дата] – додати день народження
-• show-birthday [ім'я]  – показати день народження контакту
-• birthdays [кількість днів] – показати дні народження, що наближаються
-• add-email [ім'я] [email] – додати email контакту
+ 
+• add [ім'я] [телефон]        – додати контакт
+• change [ім'я] [телефон]     – змінити номер телефону контакту
+• phone [ім'я]                – показати номер телефону контакту
+• all                         – показати всі дані контактів
+• add-birthday [ім'я] [дата]  – додати день народження
+• show-birthday [ім'я]        – показати день народження контакта
+• birthdays [кількість днів]  – показати дні народження, що наближаються
+• add-email [ім'я] [email]    – додати email контакту
 • add-address [ім'я] [адреса] – додати адресу контакту
-• delete [ім'я]         – видалити контакт
-• close, exit           – вийти з програми
+• delete [ім'я]               – видалити контакт
+• close, exit                 – завершити роботу з контактами, повернутися до стартового меню
 """
-
-
-
-
-
 
 
 """Модуль для управління нотатками. Включає класи для створення, видалення, пошуку та виведення нотаток.
@@ -521,8 +504,7 @@ def show_help(): # Функція для виведення довідки з д
 • search_notes [ключове слово]     – пошук за текстом нотатки
 • search_tag [тег]                 – пошук за тегом нотатки
 • sort_tags                        – показати всі теги, відсортовані за алфавітом
-• back                             – повернутися до стартового меню
-• exit / close                     – завершити роботу
+• exit / close                     – завершити роботу з нотатками, повернутися до стартового меню
 """
 def main_menu():
     while True:
@@ -538,17 +520,21 @@ def main_menu():
         elif choice == "2":
             main_notes()
         elif choice == "3":
-            print("👋 До побачення!")
+            # print("👋 До побачення!")
+            print("🐍 Snaky sisters шиплять тобі: 👋 До побачення! І не забувай — Python завжди десь поруч.")
             break
         else:
             print("⛔ Невірний вибір. Спробуй ще раз.")
+
+print("👋 Вітаємо тебе у світі Snaky sisters 🐍! Тут код не просто працює — він танцює!")
+
 
 def main_contacts():
     book = load_data()
     print("📖 Книга контактів – готова до роботи!")
     print("💡 Для перегляду всього переліку команд введіть: help_contacts")
     while True:
-        user_input = input("Enter a command: ")
+        user_input = input("--> ")
         command, args = parse_input(user_input)
 
         if command in ["close", "exit"]:
@@ -556,13 +542,8 @@ def main_contacts():
             print("👋 Дякуємо за використання книги контактів! До нових зустрічей! 🐍")
             break
 
-        elif command == "hello":
-            print("How can I help you?")
-
         elif command == "help_contacts":
             print(help_contacts())
-
-
 
 
         elif command == "add":
@@ -596,7 +577,7 @@ def main_contacts():
             print ( delete (args, book))    
 
         else:
-            print("Invalid command.")
+            print("😳 Команда не розпізнана. Можливо, ти винайшла(-ов) нову функцію? Введи help_contacts для списку доступного 😅")
 
 
 def main_notes(): # Головна функція для запуску програми
@@ -641,9 +622,9 @@ def main_notes(): # Головна функція для запуску прог
             case "all": # Показати всі нотатки
                 print(show_notes(notes))
 
-            case "back": # Повернення до стартового меню (додати таку саме команду в get_birthdays.py та контакти)
-                print("I'll be back ↩ Але поки повертаємося в стартове меню.")
-                break
+            # case "back": # Повернення до стартового меню (додати таку саме команду в get_birthdays.py та контакти)
+            #     print("I'll be back ↩ Але поки повертаємося в стартове меню.")
+            #     break
 
             case "exit" | "close": # Завершення роботи програми
                 print("👋 Дякуємо за використання блокноту Notes! До нових зустрічей! 🐍")
