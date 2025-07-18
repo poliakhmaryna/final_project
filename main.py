@@ -269,9 +269,21 @@ def change_contact(args, book: AddressBook):
        else:
            return "Ой-йой, контакт не знайдено 😢"
 @input_error_contact
-def show_phone(name, book: AddressBook):
-    if book.find(name):
-        return ", ".join([phone.value for phone in book.find(name).phones])
+def show_contact(name, book: AddressBook):
+    record = book.find(name)
+    if record:
+        phones = ", ".join([phone.value for phone in record.phones]) if record.phones else "Немає номерів"
+        email = record.email.value if record.email else "Немає email"
+        address = record.address.value if record.address else "Немає адреси"
+        birthday = record.birthday.value.strftime("%d.%m.%Y") if record.birthday else "Немає дня народження"
+
+        return (
+            f"📇 Контакт: {record.name.value}\n"
+            f"📞 Телефони: {phones}\n"
+            f"📧 Email: {email}\n"
+            f"🏠 Адреса: {address}\n"
+            f"🎂 День народження: {birthday}"
+        )
     else:
         return "Ой-йой, контакт не знайдено 😢"
 
@@ -374,7 +386,7 @@ def help_contacts():
  
 • add [ім'я] [телефон]        – додати контакт
 • change [ім'я] [телефон]     – змінити номер телефону контакту
-• phone [ім'я]                – показати номер телефону контакту
+• contact [ім'я]              – показати всі дані контакту
 • all                         – показати всі дані контактів
 • add_birthday [ім'я] [дата]  – додати день народження
 • show_birthday [ім'я]        – показати день народження контакта
@@ -553,8 +565,8 @@ def main_contacts():
         elif command == "change":
             print(change_contact(args, book))
 
-        elif command == "phone":
-            print (show_phone(args[0], book))
+        elif command == "contact":
+            print (show_contact (args[0], book))
 
         elif command == "all":
             print (show_all (book))
