@@ -222,7 +222,7 @@ def input_error_contact(func):
         try:
             return func(*args, **kwargs)
         except ValueError:
-            return "⚠️  Будь ласка, введіть ім'я та номер телефону."
+            return "😳 Команда не розпізнана. Можливо, ти винайшла(-ов) нову функцію? Введи help_contacts для списку доступного 😅"
         except KeyError:
             return "⚠️  Контакт не знайдено. Перевір, чи правильно вказано ім’я. Можеш скористатися командою 'all', щоб побачити список контактів."
         except IndexError:
@@ -346,7 +346,7 @@ def delete(args, book: AddressBook):
     else:
         return f"Ой-йой, контакт '{name}'не знайдено 😢"
 
-@input_error_contact
+@input_error_contact  
 def add_email(args, book: AddressBook):
     name, email = args
     record = book.find(name)
@@ -358,7 +358,7 @@ def add_email(args, book: AddressBook):
 @input_error_contact
 def add_address(args, book: AddressBook):
     if len(args) < 2:
-        raise ValueError("Щоб додати адресу, введіть команду у форматі: add-address [ім'я] [адреса]")
+        raise ValueError("Щоб додати адресу, введіть команду у форматі: add_address [ім'я] [адреса]")
     name = args[0]
     address = " ".join(args[1:])
     record = book.find(name)
@@ -376,11 +376,11 @@ def help_contacts():
 • change [ім'я] [телефон]     – змінити номер телефону контакту
 • phone [ім'я]                – показати номер телефону контакту
 • all                         – показати всі дані контактів
-• add-birthday [ім'я] [дата]  – додати день народження
-• show-birthday [ім'я]        – показати день народження контакта
+• add_birthday [ім'я] [дата]  – додати день народження
+• show_birthday [ім'я]        – показати день народження контакта
 • birthdays [кількість днів]  – показати дні народження, що наближаються
-• add-email [ім'я] [email]    – додати email контакту
-• add-address [ім'я] [адреса] – додати адресу контакту
+• add_email [ім'я] [email]    – додати email контакту
+• add_address [ім'я] [адреса] – додати адресу контакту
 • delete [ім'я]               – видалити контакт
 • close, exit                 – завершити роботу з контактами, повернутися до стартового меню
 """
@@ -559,19 +559,19 @@ def main_contacts():
         elif command == "all":
             print (show_all (book))
 
-        elif command == "add-birthday":
+        elif command == "add_birthday":
             print (add_birthday (args, book))
 
-        elif command == "show-birthday":
+        elif command == "show_birthday":
             print (show_birthday (args, book))
 
         elif command == "birthdays":
             print (birthdays (args, book))
 
-        elif command == "add-email":
+        elif command == "add_email":
             print(add_email(args, book))
 
-        elif command == "add-address":
+        elif command == "add_address":
             print(add_address(args, book))    
         
         elif command == "delete":
