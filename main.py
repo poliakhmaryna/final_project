@@ -4,19 +4,16 @@ import pickle # для серіалізації та десеріалізаці�
 import re # для перевірки формату email
 import textwrap # для форматування тексту нотаток, переносу текста, щоб була краса в терміналі)
 import json # для збереження та завантаження нотаток у форматі JSON
-
 #Серелізація
 def save_data(book, filename="addressbook.pkl"):
     with open(filename, "wb") as f:
         pickle.dump(book, f)
-
 def load_data(filename="addressbook.pkl"):
     try:
         with open(filename, "rb") as f:
             return pickle.load(f)
     except FileNotFoundError:
         return AddressBook()
-
 
 #опис класів
 
