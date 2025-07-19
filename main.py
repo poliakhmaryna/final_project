@@ -4,10 +4,12 @@ import pickle # для серіалізації та десеріалізаці�
 import re # для перевірки формату email
 import textwrap # для форматування тексту нотаток, переносу текста, щоб була краса в терміналі)
 import json # для збереження та завантаження нотаток у форматі JSON
+
 #Серелізація
 def save_data(book, filename="addressbook.pkl"):
     with open(filename, "wb") as f:
         pickle.dump(book, f)
+
 def load_data(filename="addressbook.pkl"):
     try:
         with open(filename, "rb") as f:
@@ -16,11 +18,9 @@ def load_data(filename="addressbook.pkl"):
         return AddressBook()
 
 #опис класів
-
 class Field:
     def __init__(self, value):
         self.value = value
-
     def __str__(self):
         return str(self.value)
 
@@ -35,6 +35,7 @@ class Phone(Field):
         if not (len(value) == 10):
             raise ValueError("Номер телефону має містити рівно 10 цифр. Спробуй ще раз.") 
         super().__init__(value)
+
 class Birthday(Field):
     def __init__(self, value):
         try:
@@ -43,26 +44,18 @@ class Birthday(Field):
             raise ValueError("Невірний формат дати. Введи у форматі: DD.MM.YYYY")
         self.value = birthday
 
-
 #додала класс email та перевірку формата  його введення
-
-class Email(Field):
+class Email(Field):         
     def __init__(self, value):
         if not re.match(r"^[\w\.-]+@[\w\.-]+\.\w+$", value):
             raise ValueError("Емм... Це не схоже на email. Спробуй у форматі: username@example.com")
         super().__init__(value)
-
 
 class Address(Field):
     def __init__(self, value):
         if not value:
             raise ValueError("🐍 Ой, не забувай вказати адресу!")
         super().__init__(value)
-
-
-
-# обов`язкові поля для створення контакту - name та phone, інше можна додати пізніше. якщо ми хочемо щоб була
-# можливість ввести їх відразу треба переробити. напевно треба спитати у ментора яка вимога тут
 
 class Record:
     def __init__(self, name):
@@ -87,6 +80,7 @@ class Record:
             if p.value == phone:
                 self.phones.remove(p)
                 break
+
     def edit_phone(self, old_phone: str, new_phone: str):
         for i, p in enumerate(self.phones):
             if p.value == old_phone:
@@ -99,10 +93,10 @@ class Record:
                 return p
         return None
     
-
 class AddressBook(UserDict):
     def add_record(self, record):
         self.data[record.name.value] = record
+
     def find(self, name):
         return self.data.get(name)  
     
@@ -129,7 +123,6 @@ class AddressBook(UserDict):
         return upcoming
 
 #  класс Notes
-
 class NotesName(Field): # клас для назви нотатки
     def __init__(self, value):
         if not value or not isinstance(value, str):
@@ -141,7 +134,6 @@ class NoteText(Field): # клас для тексту нотатк
         if not value or not isinstance(value, str):
             raise ValueError("Текст нотатки має бути непорожнім рядком.")
         super().__init__(value)
-
 
 class TagNotes(Field): # клас для тегів нотаток
     def __init__(self, value):
@@ -172,7 +164,6 @@ class NoteRecord: # клас для запису нотатки
     @classmethod # класовий метод для створення об'єкта з словника
     def from_dict(cls, data):
         return cls(data["name"], data["text"], data.get("tag"))
-
 
 class NotesBook(UserDict): # клас для книги нотаток, що наслідує UserDict
     def add_note(self, record: NoteRecord): # клас для додавання нотатки
@@ -213,7 +204,6 @@ class NotesBook(UserDict): # клас для книги нотаток, що н�
         except FileNotFoundError:
             pass  # Файл уперше не знайдено — працюємо з порожньою книгою
 
-
 def input_error_contact(func):
     def inner(*args, **kwargs):
         try:
@@ -225,15 +215,11 @@ def input_error_contact(func):
         except IndexError:
             return "⚠️  Здається, ти забув(ла) вказати ім’я."
     return inner
+
 def parse_input(user_input):
     cmd, args = user_input.split()
     cmd = cmd.strip().lower()
     return cmd, *args
-
-
-#вимога про контакти: add_contact - додеє контакт в книгу контактів , сhange_contact - редагує, delete  - видаляє.
-#  це обовязкові функції згідно завдання. усі інші були в дз я залишила, та окремо додала функцію 
-
 
 @input_error_contact
 def add_contact(args, book: AddressBook):
@@ -255,6 +241,7 @@ def add_contact(args, book: AddressBook):
         message += f" Додано номер телефону: {phone}."
     
     return message
+
 @input_error_contact
 def change_contact(args, book: AddressBook):
        name, new_phone = args
@@ -265,6 +252,7 @@ def change_contact(args, book: AddressBook):
            return "Контакт змінено"
        else:
            return "Ой-йой, контакт не знайдено 😢"
+       
 @input_error_contact
 def show_contact(name, book: AddressBook):
     record = book.find(name)
@@ -345,7 +333,6 @@ def birthdays(args, book: AddressBook):
         result += f"👤 {record.name.value} — {date}\n"
     return result.strip()
 
-
 @input_error_contact
 def delete(args, book: AddressBook):
     name = args[0]
@@ -376,7 +363,6 @@ def add_address(args, book: AddressBook):
         return f"Адресу додано до контакту {name}."
     return f"Ой-йой, контакт '{name}' не знайдено 😢"
 
-
 def help_contacts():
     return """
 Доступні команди:
@@ -394,11 +380,8 @@ def help_contacts():
 • close, exit                 – завершити роботу з контактами, повернутися до стартового меню
 """
 
-
 """Модуль для управління нотатками. Включає класи для створення, видалення, пошуку та виведення нотаток.
 Використовує UserDict для зберігання нотаток та забезпечує зручний інтерфейс для роботи з ними. """
-
-
 def input_error(func): # декоратор для обробки помилок введення
     def wrapper(*args, **kwargs):
         try:
@@ -423,7 +406,6 @@ def add_note(args, book: NotesBook): # Функція для додавання 
     book.add_note(record)
     return f"Нотатку '{name}' додано."
 
-
 @input_error
 def delete_note(args, book: NotesBook): # Функція для видалення нотатки
     name = args[0] 
@@ -435,12 +417,9 @@ def delete_note(args, book: NotesBook): # Функція для видаленн
 def edit_name(args, book: NotesBook): # Функція для редагування назви нотатки
     if len(args) < 2:
         raise ValueError("Вкажи стару та нову назву нотатки.\nПриклад: edit_name [стара назва] [нова назва]")
-
     old_name, new_name = args[0], args[1]
-
     if old_name not in book.data:
         return f"Ой-йой, нотатку з назвою '{old_name}' не знайдено 😢"
-
     note = book.data.pop(old_name)
     note.name.value = new_name
     book.data[new_name] = note
@@ -450,13 +429,10 @@ def edit_name(args, book: NotesBook): # Функція для редагуван
 def edit_text(args, book: NotesBook): # Функція для редагування тексту нотатки
     if len(args) < 2:
         raise ValueError("Вкажи назву нотатки та новий текст.\nПриклад: edit_text [назва] [новий текст]")
-
     name = args[0]
     new_text = " ".join(args[1:])
-
     if name not in book.data:
         return f"Ой-йой, нотатку '{name}' не знайдено 😢"
-
     book.data[name].text.value = new_text
     return f"Текст нотатки '{name}' успішно оновлено."
 
@@ -467,20 +443,17 @@ def show_notes(book: NotesBook): # Функція для виведення вс
         return "Книга нотаток порожня."
     return "\n".join(str(note) for note in notes)
 
-
 @input_error
 def search_note(args, book: NotesBook): # Функція для пошуку нотатки за назвою
     keyword = " ".join(args)
     results = book.search_by_name(keyword)
     return "\n".join(str(note) for note in results) if results else "Ой-йой, шось пішло не так 😅all Нотатки не знайдено."
 
-
 @input_error
 def search_note_text(args, book: NotesBook):  # Функція для пошуку нотатки за текстом
     keyword = " ".join(args)
     results = book.search_by_text(keyword)
     return "\n".join(str(note) for note in results) if results else "Ой-йой, шось пішло не так 😅 Нотатки не знайдено за текстом."
-
 
 @input_error
 def search_tag(args, book: NotesBook): # Функція для пошуку нотатки за тегом - бонусне завдання
@@ -492,10 +465,8 @@ def search_tag(args, book: NotesBook): # Функція для пошуку но
 def sort_tags(book: NotesBook):
     notes = book.get_all_notes()
     tags = [note.tag.value for note in notes if note.tag and note.tag.value]
-
     if not tags:
         return "📦 Упс! Схоже, цей тег десь сховався між рядками коду або випив всю кавусю... Ми його не знайшли 😅"
-
     sorted_tags = sorted(set(tags), key=str.lower)
     return "📚 Всі теги у нотатках (в алфавітному порядку):\n" + "\n".join(f"• {tag}" for tag in sorted_tags)
 
@@ -538,7 +509,6 @@ def main_menu():
 
 print("👋 Вітаємо тебе у світі Snaky sisters 🐍! Тут код не просто працює — він танцює!")
 
-
 def main_contacts():
     book = load_data()
     print("📖 Книга контактів – готова до роботи!")
@@ -554,7 +524,6 @@ def main_contacts():
 
         elif command == "help_contacts":
             print(help_contacts())
-
 
         elif command == "add":
             print(add_contact(args, book))
@@ -588,7 +557,6 @@ def main_contacts():
 
         else:
             print("😳 Команда не розпізнана. Можливо, ти винайшла(-ов) нову функцію? Введи help_contacts для списку доступного 😅")
-
 
 def main_notes(): # Головна функція для запуску програми
     notes = NotesBook() 
@@ -631,10 +599,6 @@ def main_notes(): # Головна функція для запуску прог
 
             case "all": # Показати всі нотатки
                 print(show_notes(notes))
-
-            # case "back": # Повернення до стартового меню (додати таку саме команду в get_birthdays.py та контакти)
-            #     print("I'll be back ↩ Але поки повертаємося в стартове меню.")
-            #     break
 
             case "exit" | "close": # Завершення роботи програми
                 print("👋 Дякуємо за використання блокноту Notes! До нових зустрічей! 🐍")
